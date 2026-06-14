@@ -36,18 +36,42 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
    If `auth` names an env var (e.g. `FINNGENIE_TOKEN`), confirm a `.env` exists and the var is set.
    If not, stop and tell the user how to get the token (point to the catalog's README); do not proceed.
 
-5. **Launch the first notebook** in a headless sandbox and confirm the kernel is ready:
+5. **Launch the first notebook** in a sandbox, in the background, and remember the port:
 
    ```bash
    PORT=$(python -c "import socket; s=socket.socket(); s.bind(('127.0.0.1',0)); print(s.getsockname()[1])")
-   env -u PYTHONPATH uvx marimo edit --sandbox --headless --no-token --port $PORT notebooks/<first_notebook>
+   echo "marimo port: $PORT"
+   env -u PYTHONPATH uvx marimo edit --sandbox --no-token --port $PORT notebooks/<first_notebook>
    ```
 
    `--sandbox` is required so the notebook's PEP 723 dependencies are provisioned.
    `env -u PYTHONPATH` avoids a Nix-shell websockets shim that crashes startup.
+   Run it in the background so it does not block, and keep `$PORT` - the next step needs it.
 
-6. **Hand off.**
-   Tell the user the kernel is running and that they can now ask a question - the `compose-notebook` skill takes it from here.
+   Do **not** pass `--headless`. Omitting it lets marimo auto-open the browser, which is the
+   point of pairing - the user gets a live notebook to look at. Only add `--headless` on a
+   remote/SSH host with no browser, and in that case open `http://localhost:$PORT` for the user
+   yourself (`open` on macOS, `xdg-open` on Linux).
+
+6. **Run every cell, then confirm the kernel is populated.**
+   marimo only auto-runs cells when a browser frontend connects, so a freshly launched kernel
+   can sit with all cells stale and every notebook variable undefined. Do not rely on the
+   browser - run the cells explicitly via the marimo-pair scripts you installed in step 3
+   (`scripts/execute-code.sh`, targeting `--port $PORT`):
+
+   ```python
+   import marimo._code_mode as cm
+   async with cm.get_context() as ctx:
+       for c in ctx.cells:
+           ctx.run_cell(c.id)
+   ```
+
+   Then spot-check that a key variable resolved (e.g. print the shape of the notebook's main
+   table) before handing off. An empty, unexecuted kernel is the most common "it didn't work".
+
+7. **Hand off.**
+   Tell the user the kernel is running, the notebook is open in their browser, and that they can
+   now ask a question - the `compose-notebook` skill takes it from here.
 
 ## Notes
 
