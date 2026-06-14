@@ -1,12 +1,25 @@
-______________________________________________________________________
-
-## name: scaffold-catalog description: >- Stand up a brand-new vignette catalog for a new dataset, following the catalog-skills pattern. Use when someone wants to start a catalog, create a new instance like jx/fgx/prx/dmx for a different dataset, or "scaffold a catalog" - produces the minimum runnable files, conventions, manifest, and an orientation notebook. allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
+---
+name: scaffold-catalog
+description: >-
+  Stand up a brand-new vignette catalog for a new dataset, following the
+  catalog-skills pattern. Use when someone wants to start a catalog, create a
+  new instance like jx/fgx/prx/dmx for a different dataset, or "scaffold a
+  catalog" - produces the minimum runnable files, conventions, manifest, and an
+  orientation notebook.
+allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
+---
 
 # Scaffold a new catalog
 
 Stamp out the minimum a new catalog needs.
 The templates are in [references/templates.md](references/templates.md); read it before generating files.
 The metric that matters is time-to-second-instance: how fast a domain expert ships a catalog for a new dataset.
+
+## Why so little
+
+A catalog is uv + PEP 723 + notebooks, nothing more.
+Resist adding a package, a pipeline, or an environment manager now - those are weight you cannot remove later and almost never need.
+Start minimal and let the catalog earn complexity only when a stable subset of the work demands it.
 
 ## Arguments
 
@@ -49,5 +62,4 @@ Run in order; stop and report on any failure.
 ## What this skill does NOT create
 
 No `src/` package, no Snakemake/redun pipeline, no pixi environment, no Justfile, no S3 sync.
-A catalog is uv + PEP 723 + notebooks.
 Those production pieces are added later, only if a stable subset earns them - see the catalog-skills README, "Graduating to a production pipeline".

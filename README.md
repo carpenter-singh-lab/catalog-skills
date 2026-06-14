@@ -11,8 +11,7 @@ It works at one notebook and scales to many; scaling up is optional.
 Four catalogs run today on this pattern: [jx](https://github.com/broadinstitute/jx) (JUMP Cell Painting), [fgx](https://github.com/broadinstitute/fgx) (FinnGen genetics), [prx](https://github.com/broadinstitute/prx) (PROSPECT chemical-genetics), [dmx](https://github.com/broadinstitute/dmx) (DepMap).
 
 > This repo is the successor to the lab's old `workflows.md` (Cookiecutter Data Science + Snakemake/S3 pipeline SOP).
-> Catalog-composition is now the default way we do data analysis.
-> The heavy pipeline machinery still exists but is no longer where you start - see [Graduating to a production pipeline](#graduating-to-a-production-pipeline).
+> Catalog-composition is now the default way we do data analysis; the heavy pipeline machinery is no longer where you start.
 
 ## Install
 
@@ -36,59 +35,26 @@ npx skills add carpenter-singh-lab/catalog-skills/compose-notebook --agent claud
 | [`compose-notebook`](skills/compose-notebook/SKILL.md) | Answer a question by composing a new notebook from a catalog's existing `@app.function` helpers, validate it in a live kernel, and snapshot it for molab. |
 | [`scaffold-catalog`](skills/scaffold-catalog/SKILL.md) | Stand up a brand-new catalog for a new dataset - the minimum files, conventions, and an orientation notebook. |
 
-The operational depth (conventions, gotchas, the data contract, the index notebook, scaffold templates) lives in each skill's `references/` folder and is read on demand.
-This page is the conceptual orientation; the skills are the executable contract.
+Each skill is self-contained: a `SKILL.md` plus its own `references/` (and `scripts/` where useful).
+The skills are the executable contract; this page is human orientation.
+The operational depth - conventions, gotchas, the data contract, the index notebook, scaffold templates - lives in each skill's `references/` and loads on demand, so it is not repeated here.
 
-## The pattern
+## Why this shape
 
-### Core principles
+- **Catalog over library.** Reusable logic lives as `@app.function` cells in numbered notebooks, imported across notebooks - not extracted into a package until repeated imports actually make it painful.
+- **Vignettes vs composed notebooks.** Vignettes are the curated catalog (each teaches one move, high bar). Composed notebooks are answers to questions (they just have to work). Keeping them distinct is what keeps a catalog small and high-signal.
+- **Agent-native.** The contract is skills, not a document, because the thing that acts on it is an agent. A catalog installs these skills rather than copy-pasting them, so the contract stays in one place and instances re-converge by version bump.
 
-1. **Catalog over library.**
-   Helpers live as top-level `@app.function` cells in numbered notebooks, not in a `src/` package.
-   Later notebooks import them as plain Python.
-   Do not extract a package until repeated cross-notebook imports make the notebook-as-library pattern painful.
-
-2. **Vignettes vs composed notebooks.**
-   Vignettes are the curated catalog - each teaches one move and the bar for entry is high.
-   Composed notebooks are what an agent or user produces to answer a question; they only have to answer the question.
-   The catalog stays small on purpose; one that absorbs every analysis loses the signal the agent depends on.
-
-3. **Data flows one direction.**
-   `raw/` + `external/` -> `interim/` -> `processed/`.
-   Raw data is immutable.
-   (Carried over from the old workflow; it is the one structural rule that did not change.)
-
-4. **The composed notebook is the reproducible artifact.**
-   A reader re-runs the notebook and gets the same result.
-   Every fetched input is hash-pinned; the notebook carries its own dependencies; nothing depends on the agent run that produced it.
-
-5. **Validate by running and looking.**
-   Static checks do not catch empty tables, stale endpoints, wrong sign conventions, or plots that render but say nothing.
-   After composing or editing any notebook, launch it in a live kernel, run every cell, and inspect the actual outputs.
-
-6. **Human and agent dual-readability.**
-   `README.md` orients a person; the installed skills orient an agent; the catalog notebooks serve both.
-
-### When to use a catalog vs a production pipeline
+## When to use a catalog vs a production pipeline
 
 Default to a catalog.
-Reach for a production pipeline only when a stable subset of the analysis needs scheduled, large-scale, or fully-managed reproducibility (a paper's final numbers, a recurring batch job).
-Most analysis never crosses that line.
-
-### Graduating to a production pipeline
-
-When a stable subset earns it, add a pipeline alongside the catalog - do not replace it.
-Use [redun](https://github.com/insitro/redun) for orchestration (the jpx catalog runs 65 tasks, ~13 min full rebuild on 4x H100).
-The catalog notebooks remain the source of the analysis logic; the pipeline wires the stable ones into a DAG for batch execution.
-The four-tier `data/` tree, one-direction flow, raw immutability, and SHA-256-pinned fetches carry over unchanged.
-What you add only at this stage: the DAG, a heavier environment manager if GPU/conda deps demand it (pixi), and team data sync.
+Reach for a production pipeline only when a stable subset needs scheduled, large-scale, or fully-managed reproducibility (a paper's final numbers, a recurring batch job); most analysis never crosses that line.
+When it does, add a [redun](https://github.com/insitro/redun) pipeline alongside the catalog - the notebooks stay the source of the logic, the four-tier `data/` tree and SHA-256-pinned fetches carry over, and you add only the DAG (and pixi if GPU/conda deps demand it).
 See [jpx](https://github.com/broadinstitute/jpx) for a worked example.
 
-## Per-instance manifest
+## Per-instance specifics
 
-The skills are shared; each catalog's specifics (its vignette table, data surface, auth, first notebook) live in a small `catalog.toml` at the catalog root that the skills read.
-This is what lets every catalog install the same skills instead of forking them.
-See [`compose-notebook/references/manifest.md`](skills/compose-notebook/references/manifest.md) for the schema.
+Each catalog declares its own vignette table, data surface, auth, and first notebook in a `catalog.toml` at its root, which the skills read - see [`skills/compose-notebook/references/manifest.md`](skills/compose-notebook/references/manifest.md).
 
 ## License
 

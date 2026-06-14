@@ -1,6 +1,13 @@
-______________________________________________________________________
-
-## name: getting-started description: >- First-run setup for a vignette catalog (jx, fgx, prx, dmx, or any catalog built on the catalog-skills pattern). Use when someone has just cloned a catalog repo and asks to "get started", "set up", or "help me run this", or when a marimo catalog needs its prerequisites installed and a first notebook launched in a live kernel. allowed-tools: Bash, Read
+---
+name: getting-started
+description: >-
+  First-run setup for a vignette catalog (jx, fgx, prx, dmx, or any catalog
+  built on the catalog-skills pattern). Use when someone has just cloned a
+  catalog repo and asks to "get started", "set up", or "help me run this", or
+  when a marimo catalog needs its prerequisites installed and a first notebook
+  launched in a live kernel.
+allowed-tools: Bash, Read
+---
 
 # Getting started in a catalog
 

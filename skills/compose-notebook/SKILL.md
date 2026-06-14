@@ -1,11 +1,26 @@
-______________________________________________________________________
-
-## name: compose-notebook description: >- Compose a new marimo notebook that answers a data question by reusing the @app.function helpers already in a vignette catalog (jx, fgx, prx, dmx, or any catalog on the catalog-skills pattern), then validate it in a live kernel. Use whenever someone asks for an analysis, figure, notebook, or vignette against a catalog's dataset - even if they don't say "marimo" or "reuse the catalog" - instead of writing a query pipeline from scratch or duplicating helpers that already exist. allowed-tools: Bash, Read, Write, Glob, Grep
+---
+name: compose-notebook
+description: >-
+  Compose a new marimo notebook that answers a data question by reusing the
+  @app.function helpers already in a vignette catalog (jx, fgx, prx, dmx, or any
+  catalog on the catalog-skills pattern), then validate it in a live kernel.
+  Use whenever someone asks for an analysis, figure, notebook, or vignette
+  against a catalog's dataset - even if they don't say "marimo" or "reuse the
+  catalog" - instead of writing a query pipeline from scratch or duplicating
+  helpers that already exist.
+allowed-tools: Bash, Read, Write, Glob, Grep
+---
 
 # Compose a notebook from a catalog
 
 Answer a question by composing existing catalog helpers in a live kernel, not by writing a pipeline from scratch.
 Drive the kernel with the `marimo-pair` skill; if it is not running, run `getting-started` first.
+
+## Why compose instead of writing fresh
+
+- **Catalog over library.** The catalog's reusable logic lives as top-level `@app.function` cells in numbered notebooks, not a package. Reuse them by importing; do not re-implement what a vignette already does, and do not reach for a `src/` package.
+- **Vignettes vs composed notebooks.** The catalog's curated notebooks (vignettes) each teach one move and earn their place. What you produce here is a *composed* notebook - it only has to answer the question. Most composed notebooks stay composed; few become vignettes. This keeps the catalog small and high-signal.
+- **Validate by running and looking.** Static checks pass on notebooks that return empty tables, wrong-signed correlations, or plots that render but say nothing. The result is only trustworthy once you have executed every cell and looked at the output.
 
 ## Procedure
 
