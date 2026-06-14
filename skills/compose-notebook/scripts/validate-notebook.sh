@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Validate a composed or edited marimo notebook: lint, static-check, then execute and
+# refresh its molab session snapshot. The mechanical half of the validation rule -
+# you still have to open the notebook and look at the outputs afterward.
+#
+# Usage: bash validate-notebook.sh notebooks/<topic>.py
+set -euo pipefail
+
+NB="${1:?usage: validate-notebook.sh notebooks/<topic>.py}"
+DIR="$(dirname "$NB")"
+
+echo "==> ruff check + format ($DIR)"
+uvx ruff check "$DIR"
+uvx ruff format "$DIR"
+
+echo "==> marimo check ($NB)"
+uvx marimo check "$NB"
+
+# Snapshot must be regenerated AFTER the final source/formatter edit (above), or molab
+# strips outputs on a code_hash mismatch. Executing the notebook here also surfaces
+# runtime failures that static checks miss. env -u PYTHONPATH avoids the Nix websockets shim.
+echo "==> execute + refresh molab session snapshot (failure here is a real bug in the notebook)"
+env -u PYTHONPATH uvx marimo export session --sandbox "$NB"
+
+cat <<EOF
+
+OK - mechanical checks passed and the snapshot is refreshed.
+Commit the regenerated __marimo__/session/*.json in the same change as the .py.
+
+NOW open the notebook and inspect the outputs yourself. Static checks do not catch
+empty tables, wrong sign conventions, stale endpoints, or plots that render but say nothing:
+
+  PORT=\$(python -c "import socket; s=socket.socket(); s.bind(('127.0.0.1',0)); print(s.getsockname()[1])")
+  env -u PYTHONPATH uvx marimo edit --sandbox --headless --no-token --port \$PORT $NB
+EOF
