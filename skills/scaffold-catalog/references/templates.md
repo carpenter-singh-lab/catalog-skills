@@ -34,10 +34,20 @@ notebooks/__marimo__/**
 !notebooks/__marimo__/session/
 !notebooks/__marimo__/session/*.json
 
+# Installed skills: recorded in the tracked skills-lock.json, NOT vendored.
+# `npx skills add` writes content into these stores; ignoring them keeps a clone
+# from committing third-party skill copies that go stale. A fresh clone restores
+# them from the lock with `npx skills update` (see AGENTS.md / README). To commit
+# a FIRST-PARTY skill you author in this repo, add an allow line, e.g.
+# `!.claude/skills/<your-skill>/`.
+.agents/
+.claude/skills/*
+
 # Local cache
 .cache/
 ```
 
+`skills-lock.json` itself is tracked - it is the record `npx skills update` restores from. Do not ignore it.
 The `data/**` block is right for `rest` / `duckdb` / `pooch` surfaces, where `data/` holds large fetched artifacts.
 For `surface = "files"` - small data committed to the repo (the whole point of a committed-data instance) - drop those four `data/**` lines so the data is tracked; git is then the integrity mechanism (see the `compose-notebook` data contract).
 The `__marimo__/session/*.json` exception is non-negotiable on every surface: it is what lets molab render committed outputs.
@@ -59,6 +69,17 @@ This file exists only so Claude Code discovers the contract; do not fork guidanc
 Project-specific guidance for agents working in this catalog.
 `README.md` is the human entry point.
 This catalog uses the shared catalog-skills (`getting-started`, `compose-notebook`); its specifics live in `catalog.toml`.
+
+## Skills (restore after clone)
+
+The catalog skills are installed via `npx skills add`, recorded in the tracked `skills-lock.json`, but **not vendored** -
+the install stores (`.agents/`, `.claude/skills/*`) are gitignored. A fresh clone has only the lock, so the on-disk
+skill content (and the `validate-notebook.sh` the rule below depends on) is missing until you restore it. Run once, from the repo root:
+
+    npx skills update
+
+This reconstitutes every skill the lock pins. Do this before relying on the skills or the validation rule.
+(This instruction lives here, in a tracked file, on purpose: a skill cannot bootstrap its own install.)
 
 ## Launching notebooks
 

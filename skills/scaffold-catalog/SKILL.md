@@ -52,7 +52,7 @@ Run in order; stop and report on any failure.
 
 5. Write an orientation notebook `notebooks/nb01_orientation.py`: a PEP 723 header, a `with app.setup:` block, one `@app.function` that hits the data surface, and a `## To extend` cell. Keep it minimal but runnable.
 
-6. Write a short `README.md`: what the catalog is, the one-row notebook list, getting-started, links to sibling catalogs and to the catalog-skills repo.
+6. Write a short `README.md`: what the catalog is, the one-row notebook list, getting-started, links to sibling catalogs and to the catalog-skills repo. The getting-started section must include the post-clone skill restore (`npx skills update`), since the skill stores are gitignored and a cloner has only `skills-lock.json`.
 
 7. Fill `catalog.toml` with the orientation notebook's helper(s) and the data surface / auth.
 
@@ -68,7 +68,7 @@ The steps above still apply, with these adjustments:
 
 - Skip step 1 - no `mkdir`, no `git init`, no `cd` into a new directory. You are already in the repo.
 - Still author the contract: `catalog.toml`, `AGENTS.md`, the `pyproject.toml` ruff block, and a thin `CLAUDE.md`. If a `CLAUDE.md` already exists, thin it to a pointer at `AGENTS.md` rather than forking guidance across both.
-- Reconcile the `.gitignore`, do not overwrite it. Keep the repo's existing rules and merge in only what is missing - in particular the `!notebooks/__marimo__/session/*.json` exception, since a blanket `__marimo__/` ignore silently drops the snapshots molab renders. For `surface = "files"`, do not add the `data/**` ignore: the repo commits its small data on purpose.
+- Reconcile the `.gitignore`, do not overwrite it. Keep the repo's existing rules and merge in only what is missing - in particular the `!notebooks/__marimo__/session/*.json` exception, since a blanket `__marimo__/` ignore silently drops the snapshots molab renders, and the skill-store ignore (`.agents/`, `.claude/skills/*`) so step 4's `npx skills add` does not vendor third-party skills into the repo. For `surface = "files"`, do not add the `data/**` ignore: the repo commits its small data on purpose.
 - Preserve the repo's existing planning docs and data; create only the `data/` tier directories that are missing.
 
 Then continue from step 5 (orientation notebook) as normal.

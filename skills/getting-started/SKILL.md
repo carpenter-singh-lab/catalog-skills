@@ -53,3 +53,4 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
 
 - Public catalogs (e.g., jx, prx, dmx) need no auth, where some do, e.g., fgx needs `FINNGENIE_TOKEN`.
 - Do not improvise alternative launch commands; the `--sandbox` flag is what makes per-notebook dependencies work.
+- If the repo gitignores its skill stores (tracks only `skills-lock.json`) and the catalog skills look missing or stale, `npx skills update` reconstitutes them from the lock. This is a refresh once the skills are already present - it is **not** the clone-time bootstrap. A cloner who has *no* catalog skills on disk cannot reach this skill to run that step; the post-clone restore therefore lives in the repo's tracked `AGENTS.md` / `README.md`, not here, since a skill cannot bootstrap its own install.
