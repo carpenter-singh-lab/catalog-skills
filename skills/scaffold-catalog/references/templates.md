@@ -28,11 +28,8 @@ data/**
 !data/**/
 !data/**/.gitkeep
 
-# marimo caches, except committed session snapshots
+# marimo caches and exported session snapshots
 notebooks/__marimo__/**
-!notebooks/__marimo__/
-!notebooks/__marimo__/session/
-!notebooks/__marimo__/session/*.json
 
 # Installed skills: recorded in the tracked skills-lock.json, NOT vendored.
 # `npx skills add` writes content into these stores; ignoring them keeps a clone
@@ -50,7 +47,7 @@ notebooks/__marimo__/**
 `skills-lock.json` itself is tracked - it is the record `npx skills update` restores from. Do not ignore it.
 The `data/**` block is right for `rest` / `duckdb` / `pooch` surfaces, where `data/` holds large fetched artifacts.
 For `surface = "files"` - small data committed to the repo (the whole point of a committed-data instance) - drop those four `data/**` lines so the data is tracked; git is then the integrity mechanism (see the `compose-notebook` data contract).
-The `__marimo__/session/*.json` exception is non-negotiable on every surface: it is what lets molab render committed outputs.
+Do not track `notebooks/__marimo__/session/*.json` by default. Those files are useful local export artifacts, but they can include random marimo UI widget ids and produce noisy diffs. If a catalog deliberately wants molab/static previews from committed snapshots, add an explicit `!notebooks/__marimo__/session/*.json` exception and warn the user about the churn tradeoff.
 
 ## CLAUDE.md
 

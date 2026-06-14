@@ -37,7 +37,7 @@ Run in order; stop and report on any failure.
 2. Create the tree:
 
    ```bash
-   mkdir -p notebooks/__marimo__/session
+   mkdir -p notebooks
    mkdir -p data/{external,raw,interim,processed}
    touch data/{external,raw,interim,processed}/.gitkeep
    ```
@@ -68,7 +68,7 @@ The steps above still apply, with these adjustments:
 
 - Skip step 1 - no `mkdir`, no `git init`, no `cd` into a new directory. You are already in the repo.
 - Still author the contract: `catalog.toml`, `AGENTS.md`, the `pyproject.toml` ruff block, and a thin `CLAUDE.md`. If a `CLAUDE.md` already exists, thin it to a pointer at `AGENTS.md` rather than forking guidance across both.
-- Reconcile the `.gitignore`, do not overwrite it. Keep the repo's existing rules and merge in only what is missing - in particular the `!notebooks/__marimo__/session/*.json` exception, since a blanket `__marimo__/` ignore silently drops the snapshots molab renders, and the skill-store ignore (`.agents/`, `.claude/skills/*`) so step 4's `npx skills add` does not vendor third-party skills into the repo. For `surface = "files"`, do not add the `data/**` ignore: the repo commits its small data on purpose.
+- Reconcile the `.gitignore`, do not overwrite it. Keep the repo's existing rules and merge in only what is missing - in particular the skill-store ignore (`.agents/`, `.claude/skills/*`) so step 4's `npx skills add` does not vendor third-party skills into the repo. Ignore `notebooks/__marimo__/` by default; only add a `!notebooks/__marimo__/session/*.json` exception when the repo explicitly chooses to track molab/static snapshots, and warn that those JSONs can drift from random UI widget ids. For `surface = "files"`, do not add the `data/**` ignore: the repo commits its small data on purpose.
 - Preserve the repo's existing planning docs and data; create only the `data/` tier directories that are missing.
 
 Then continue from step 5 (orientation notebook) as normal.

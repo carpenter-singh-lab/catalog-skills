@@ -39,7 +39,7 @@ Drive the kernel with the `marimo-pair` skill; if it is not running, run `gettin
    Run the fetch and look at the actual frame before writing narrative around it.
    Do not fabricate numbers or describe outputs you have not run.
 
-4. **Validate - run, look, check, snapshot.**
+4. **Validate - run, look, check.**
    Order matters.
    Use the `scripts/validate-notebook.sh` bundled with this skill, passing the notebook path:
 
@@ -47,10 +47,11 @@ Drive the kernel with the `marimo-pair` skill; if it is not running, run `gettin
    bash <compose-notebook-skill-dir>/scripts/validate-notebook.sh notebooks/<topic>.py
    ```
 
-   It runs `marimo check --fix`, runs `ruff` on that notebook, and - last, after the final source edit - executes the notebook and refreshes the molab session snapshot.
+   It runs `marimo check --fix`, runs `ruff` on that notebook, and - last, after the final source edit - executes the notebook through marimo export.
    Then open the notebook and inspect the outputs yourself; static checks miss empty tables, wrong signs, and plots that render but say nothing.
-   Commit the regenerated `__marimo__/session/*.json` in the same change as the `.py`.
-   The snapshot `code_hash` discipline and other traps are in [references/gotchas.md](references/gotchas.md).
+   Do not assume `__marimo__/session/*.json` belongs in git: marimo session snapshots can include random UI widget ids and produce noisy diffs.
+   Commit them only when the repo explicitly tracks snapshots for molab/static rendering, and warn the user about that tradeoff first.
+   The snapshot tradeoffs and other traps are in [references/gotchas.md](references/gotchas.md).
 
 5. **Write outputs and an index envelope.**
    Save analysis outputs under `data/processed/<topic>/`.
@@ -68,5 +69,5 @@ Drive the kernel with the `marimo-pair` skill; if it is not running, run `gettin
 - [conventions.md](references/conventions.md) - notebook structure, naming, imports, PEP 723, ruff
 - [data.md](references/data.md) - the four-tier data contract, SHA-256 pinning, caching
 - [indexing.md](references/indexing.md) - the `summary.json` envelope and the index notebook
-- [gotchas.md](references/gotchas.md) - molab snapshots, altair/vega-lite, marimo cell traps
+- [gotchas.md](references/gotchas.md) - marimo snapshots, altair/vega-lite, marimo cell traps
 - [manifest.md](references/manifest.md) - the `catalog.toml` schema
