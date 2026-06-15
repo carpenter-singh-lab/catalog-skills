@@ -2,17 +2,19 @@
 
 Harvested from the live catalogs (jx, fgx, prx, dmx). These are the traps that pass static checks but break the result or the molab preview.
 
-## molab session snapshots (the big one)
+## marimo session snapshots
 
 Session snapshots (`notebooks/__marimo__/session/*.py.json`) store a `code_hash` per cell.
 molab attaches a stored output to a source cell only when the hash matches.
 Any later edit - including a `ruff format` whitespace pass - shifts every hash and silently strips outputs in the public preview.
+They can also include interactive UI widget metadata, including random ids, that drifts across identical exports.
 
-- Always regenerate snapshots **after** the final source/formatter edit.
-- Commit the regenerated `.json` in the same change that touched the `.py`.
+- Treat snapshots as optional generated artifacts, not source, unless the repo explicitly tracks them for molab/static rendering.
+- If the repo tracks snapshots, regenerate them **after** the final source/formatter edit and commit them in the same change that touched the `.py`.
+- Warn the user before adopting or continuing that policy: snapshot diffs may include random widget-id churn unrelated to notebook behavior.
 - A snapshot that fails to execute is a real bug in the notebook, not in the snapshot.
-- `marimo check` warns `markdown-indentation` on multi-line `mo.md("""...""")` cells; resolve it with `marimo check --fix` (one pass), not by hand - hand-indenting rarely matches what marimo wants. `validate-notebook.sh` runs `--fix` before the format + snapshot steps for this reason.
-- The snapshot only survives if `.gitignore` keeps the `!notebooks/__marimo__/session/*.json` exception. A blanket `__marimo__/` ignore - common in repos not scaffolded by this skill - silently drops the snapshots you just regenerated; reconcile it when adopting the pattern in an existing repo.
+- `marimo check` warns `markdown-indentation` on multi-line `mo.md("""...""")` cells; resolve it with `marimo check --fix` (one pass), not by hand - hand-indenting rarely matches what marimo wants. `validate-notebook.sh` runs `--fix` before the format + export steps for this reason.
+- If the repo intentionally tracks snapshots, `.gitignore` needs an explicit `!notebooks/__marimo__/session/*.json` exception; otherwise ignore `notebooks/__marimo__/` and leave exported snapshots local.
 
 ## altair / vega-lite in molab
 
