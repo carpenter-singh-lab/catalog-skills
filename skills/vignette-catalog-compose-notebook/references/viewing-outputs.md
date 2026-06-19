@@ -28,6 +28,8 @@ Setup, once per environment: `ctx.packages.add("playwright")` (do **not** `await
 Heads-up: `packages.add("playwright")` writes `playwright` into the notebook's PEP 723 deps on disk. It is a compose-time capture tool, not a runtime dep - delete that line before the final gate.
 Pass `as_data_url=True` for a `data:image/png` string instead of writing a file.
 
+Capturing a widget *after* you change its state (`ctx.set_ui_value(...)` then `run_cell`): take the screenshot in a **separate** `code_mode` call, after the re-render settles. The kernel updates synchronously but the browser DOM repaints async, so a screenshot in the same block as the state change grabs the pre-repaint frame - a stale image that looks fine and is wrong (kernel reports the new state, pixels show the old one). Confirm the new state actually rendered by looking for it in the image (a row count or label in the title), not just by asserting kernel-side.
+
 ## No running server (the `marimo export` gate): export a file
 
 Make the notebook itself emit the pixels, then `Read` them:
