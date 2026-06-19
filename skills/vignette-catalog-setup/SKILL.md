@@ -47,6 +47,7 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
    MARIMO_LOG="${TMPDIR:-/tmp}/marimo-$PORT.log"
    echo "marimo port: $PORT"
    echo "marimo log: $MARIMO_LOG"
+   ulimit -n "$(ulimit -Hn)" 2>/dev/null || true   # see note below: avoids os error 24 on shared Linux hosts
    env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --port "$PORT" notebooks/<first_notebook> > "$MARIMO_LOG" 2>&1 &
    MARIMO_PID=$!
    echo "marimo pid: $MARIMO_PID"
@@ -59,6 +60,10 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
 
    `--sandbox` is required so the notebook's PEP 723 dependencies are provisioned.
    `env -u PYTHONPATH` avoids a Nix-shell websockets shim that crashes startup.
+   The `ulimit` line raises the open-file soft limit to the hard limit before provisioning: on a
+   busy shared Linux host uv's parallel bytecode-compile can exceed a low soft limit (1024 on stock
+   Ubuntu) and die with `Too many open files (os error 24)` ([astral-sh/uv#16999](https://github.com/astral-sh/uv/issues/16999)).
+   Clamping to `$(ulimit -Hn)` never exceeds the hard cap, so it is a no-op where the limit is already high (macOS) and harmless everywhere.
    The trailing `&` is load-bearing: the marimo server must keep running while the setup continues.
    Keep `$PORT` - the next step needs it.
 

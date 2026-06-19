@@ -34,6 +34,7 @@ They can also include interactive UI widget metadata, including random ids, that
 
 - `env -u PYTHONPATH` before `uvx marimo ...`: a Nix-shell websockets shim on `PYTHONPATH` crashes marimo startup.
 - Always launch with `--sandbox` or PEP 723 deps are not provisioned and every notebook fails with `ModuleNotFoundError`.
+- On a busy shared Linux host, `--sandbox` provisioning can die with `Too many open files (os error 24)`: uv's parallel bytecode-compile exceeds a low open-file soft limit (1024 on stock Ubuntu) - [astral-sh/uv#16999](https://github.com/astral-sh/uv/issues/16999). Raise it to the hard limit first with `ulimit -n "$(ulimit -Hn)"` (clamping to the hard cap can't itself error); the `setup` launch and `validate-notebook.sh` already do this. uv ships an auto-raise (PR #17464, uv 0.9.26+) but it is preview-gated (`adjust-ulimit`) and off by default, so do not rely on it yet. Macs default high enough to never hit this.
 
 ## data surfaces
 

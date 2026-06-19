@@ -9,6 +9,14 @@ set -euo pipefail
 
 NB="${1:?usage: validate-notebook.sh notebooks/<topic>.py}"
 
+# Raise the open-file soft limit to the hard limit before any --sandbox provisioning.
+# uv's parallel bytecode-compile can exceed a low soft limit (1024 on stock Ubuntu) and die
+# with "Too many open files (os error 24)" - astral-sh/uv#16999. Clamping to $(ulimit -Hn)
+# never exceeds the hard cap, so it cannot itself error under set -e. uv ships its own
+# auto-raise (PR #17464, uv 0.9.26+) but it is gated behind the `adjust-ulimit` preview and
+# off by default, so we still do it here. Drop this once that preview graduates to on-by-default.
+ulimit -n "$(ulimit -Hn)" 2>/dev/null || true
+
 # marimo check --fix first: it auto-resolves markdown-indentation (and other) warnings on
 # mo.md cells. Running it BEFORE ruff format means ruff then formats the fixed output, and the
 # export below runs after both - so the committed .py is clean and execution sees
