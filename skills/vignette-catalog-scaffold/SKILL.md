@@ -15,6 +15,7 @@ allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
 Stamp out the minimum a new catalog needs.
 The templates are in [references/templates.md](references/templates.md); read it before generating files.
 The templates are a self-contained subset of the notebook/data conventions, so this skill can run without a sibling skill installed.
+Step 8 can use the sibling validator only after step 4 installs the collection; when this skill is installed alone, run the equivalent validation sequence by hand.
 When maintaining this collection, keep them aligned with the `vignette-catalog-compose-notebook` conventions.
 The metric that matters is time-to-second-instance: how fast a domain expert ships a catalog for a new dataset.
 
@@ -80,4 +81,4 @@ Then continue from step 5 (orientation notebook) as normal.
 ## What this skill does NOT create
 
 No `src/` package, no Snakemake/redun pipeline, no pixi environment, no Justfile, no S3 sync.
-Those production pieces are added later, only if a stable subset earns them - see the vignette-catalog-skills README, "Graduating to a production pipeline".
+Those production pieces are added later, only if a stable subset earns them - see the vignette-catalog-skills README, "When to use a catalog vs a production pipeline".

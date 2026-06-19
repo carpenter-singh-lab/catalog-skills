@@ -44,24 +44,34 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
 
    ```bash
    PORT=$(python -c "import socket; s=socket.socket(); s.bind(('127.0.0.1',0)); print(s.getsockname()[1])")
+   MARIMO_LOG="${TMPDIR:-/tmp}/marimo-$PORT.log"
    echo "marimo port: $PORT"
-   env -u PYTHONPATH uvx marimo edit --sandbox --no-token --port $PORT notebooks/<first_notebook>
+   echo "marimo log: $MARIMO_LOG"
+   env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --port "$PORT" notebooks/<first_notebook> > "$MARIMO_LOG" 2>&1 &
+   MARIMO_PID=$!
+   echo "marimo pid: $MARIMO_PID"
+   for _ in $(seq 1 60); do
+       curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break
+       sleep 1
+   done
+   curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null
    ```
 
    `--sandbox` is required so the notebook's PEP 723 dependencies are provisioned.
    `env -u PYTHONPATH` avoids a Nix-shell websockets shim that crashes startup.
-   Run it in the background so it does not block, and keep `$PORT` - the next step needs it.
+   The trailing `&` is load-bearing: the marimo server must keep running while the setup continues.
+   Keep `$PORT` - the next step needs it.
 
    Whether to pass `--headless` depends on who is composing:
 
-   - **A human is pairing and a browser is available.** Omit `--headless`. marimo auto-opens
+   - **A human is pairing and a browser is available.** Remove `--headless`. marimo auto-opens
      the browser; that frontend connection both gives the user a live notebook to look at and
      registers the kernel session that step 6 needs. Skip to step 6.
-   - **You are an agent, or there is no browser** (a `--headless` server on a remote/SSH host,
-     a CI box, an agent-driven run). Pass `--headless` and register the session yourself in the
-     next step - nothing connects to the websocket on its own, so the server comes up with **no
-     session** and the first `execute-code.sh` call would fail with `No active sessions on the
-     server. Make sure a notebook is open in the browser.`
+   - **You are an agent, or there is no browser** (a remote/SSH host, a CI box, an agent-driven
+     run). Keep `--headless` and register the session yourself in the next step - nothing connects
+     to the websocket on its own, so the server comes up with **no session** and the first
+     `execute-code.sh` call would fail with `No active sessions on the server. Make sure a notebook
+     is open in the browser.`
 
 6. **Ensure a kernel session exists** (headless launch only - skip if a browser already opened).
    marimo creates a kernel *session* only when a frontend connects to its websocket. With no
@@ -89,16 +99,21 @@ Bring a freshly cloned catalog to a running marimo kernel, then hand off to comp
 7. **Run every cell, then confirm the kernel is populated.**
    marimo only auto-runs cells when a browser frontend connects, so a freshly launched kernel
    can sit with all cells stale and every notebook variable undefined. Do not rely on the
-   browser - run the cells explicitly via the marimo-pair scripts you installed in step 3
-   (`scripts/execute-code.sh`, targeting `--port $PORT`):
+   browser - run the cells explicitly through the marimo-pair `execute-code.sh` script you installed
+   in step 3, targeting `--port "$PORT"`:
 
-   ```python
+   ```bash
+   bash <marimo-pair-skill-dir>/scripts/execute-code.sh --port "$PORT" <<'EOF'
    import marimo._code_mode as cm
+
    async with cm.get_context() as ctx:
-       for c in ctx.cells:
-           ctx.run_cell(c.id)
+       for cell in ctx.cells:
+           ctx.run_cell(cell.id)
+   EOF
    ```
 
+   This uses marimo-pair's documented code-mode path inside the running kernel; it is not local
+   Python.
    Then spot-check that a key variable resolved (e.g. print the shape of the notebook's main
    table) before handing off. An empty, unexecuted kernel is the most common "it didn't work".
 
