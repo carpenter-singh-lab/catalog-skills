@@ -28,7 +28,7 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
 1. **Ensure a live kernel.**
    You compose against a running marimo kernel driven by the `marimo-pair` skill.
    If none is running - no `marimo-pair` session, no port you can post cells to - run `vignette-catalog-setup` first: it installs `marimo-pair`, launches the catalog's first notebook under `--sandbox`, runs its cells, and hands back a live kernel on a known port.
-   Keep that port - but know it is the *first notebook's* sandbox, holding only that notebook's deps. A parameter swap (step 3) runs there directly; a composed notebook that declares its own dependencies needs its own kernel instead (step 3 explains why and how).
+   Keep that port - but know it is the *first notebook's* sandbox, bound to that notebook. A parameter swap (step 3) runs there directly; composing a new notebook gets its own kernel instead (step 3 explains why and how).
 
 2. **Orient from the manifest.**
    Read `catalog.toml` at the repo root for the vignette table (each notebook, its reusable `@app.function`s, and what they do), the data surface, and any auth.
@@ -44,8 +44,8 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
    **A composed notebook usually needs its own kernel - do not assume the handed-off one will do.**
    The kernel `vignette-catalog-setup` gives you runs the *first* notebook inside a `--sandbox` provisioned from *that* notebook's PEP 723 deps.
    The moment your composed `.py` declares a dependency the first notebook lacks - a plotting or dataframe library, say - importing it in the handed-off kernel fails with `ModuleNotFoundError`, because the sandbox was never told about it and `pip install` into a uv sandbox is not the path.
-   So when your notebook adds deps, do not fight the old kernel: launch a fresh one *on the composed notebook* with the same recipe `vignette-catalog-setup` step 5 uses (a new port, `env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --port <new> notebooks/<topic>.py`, then register a session and run the cells), and target that new port for every "run a cell" in step 4.
-   Reuse the handed-off kernel only for a parameter swap or a composed notebook that introduces no new dependencies.
+   So default to giving the composed notebook its own kernel: launch a fresh one *on the composed notebook* with the same recipe `vignette-catalog-setup` step 5 uses (a new port, `env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --port <new> notebooks/<topic>.py`, then register a session and run the cells), and target that new port for every "run a cell" in step 4.
+   Do this even when your deps happen to match the first notebook's - the handed-off kernel is bound to *that* notebook, not yours, so reusing it is awkward and easy to get wrong. The dependency mismatch above is just the sharpest reason; "its own kernel" is the safe default regardless. The one case that stays on the handed-off kernel is a parameter swap: changing inputs in the existing notebook in place, not composing a new file.
 
    Either way the `.py` on disk is the source of truth: author cells there, then run them in the kernel to see the result.
    Scratch exploration can happen live, but anything the finished notebook depends on must land in the `.py`, not only in kernel state - a fresh kernel has to reproduce it.
@@ -55,6 +55,7 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
    Work one cell at a time: run the fetch first and look at the actual frame before writing any narrative around it; do not fabricate numbers or describe outputs you have not run.
    On a REST or otherwise open-ended surface, bound that first fetch - one page, a small `limit`, a single id - before you widen. An unbounded exploratory pull can crawl an entire table (a popular target's bioactivity set is tens of thousands of rows) and stall the loop before you have seen the shape of anything. Look at the bounded slice, confirm the fields are what you expect, then raise the limit deliberately if the question actually needs more.
    Then add each downstream cell, run it in the kernel via the `marimo-pair` execute scripts (targeting your port), and read the output before moving on.
+   When you edit a cell's source on disk, re-running it via `marimo-pair` runs the kernel's *in-memory* cell graph, not the file you just saved - so you keep executing the stale version and chase phantom errors (a `NameError` for a variable you already added, a fix that "doesn't take"). After editing a cell, reload it into the kernel (or relaunch the kernel on the edited `.py`) before re-running; the headless gate in step 5 sidesteps this entirely by running from a clean slate.
    For charts, looking means inspecting the rendered image, not just confirming the cell ran without error. In a live session, `ctx.screenshot` rasterizes the rendered DOM to a PNG - one call for matplotlib, altair/vega, plotly, or a widget alike. See [references/viewing-outputs.md](references/viewing-outputs.md).
    Keep going until every cell runs clean and says something true.
 
