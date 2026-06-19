@@ -117,8 +117,10 @@ for the skill to be invoked. Restore with `npx skills update` if the skill store
 
 ## When the question fits the catalog
 
-<MAP: question type -> notebook, one line each. Mirror the [[vignette]] table in catalog.toml.>
+The notebook-to-question routing lives in the `[[vignette]]` table in `catalog.toml` - each notebook, its helpers, and what it does - which is the single source the `vignette-catalog-compose-notebook` skill reads. Do not mirror that table here; point at it.
 ```
+
+Two surfaces enumerate the notebooks on purpose, and that is the most they should: `catalog.toml`'s `[[vignette]]` table is the machine copy (the compose skill reads it), and the `README.md` table is the human copy (it carries molab preview links and prose for someone browsing the repo). `AGENTS.md` is for the agent, which already reads `catalog.toml`, so it adds a pointer, not a third copy. This keeps the scaffold aligned with `manifest.md`: "Keep `catalog.toml` the single source of the vignette table."
 
 ## catalog.toml
 
