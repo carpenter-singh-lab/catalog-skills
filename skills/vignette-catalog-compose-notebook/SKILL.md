@@ -51,12 +51,15 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
    For charts, looking means inspecting the rendered image, not just confirming the cell ran without error - use `marimo-pair`'s facilities for viewing cell outputs; if you cannot get eyes on a chart from the agent, export the figure to a file under `data/processed/<topic>/` and open that.
    Keep going until every cell runs clean and says something true.
 
+   **Headless / no live kernel.** A non-interactive agent (CI, no browser, no drivable `marimo-pair` port) cannot run the cell-by-cell loop above. Then this is the supported substitute: author the cells in the `.py` (still the source of truth), run the headless gate in step 5 to execute the whole notebook from a clean slate, and *look at the real outputs through the export* rather than a live kernel - read `notebooks/__marimo__/session/<topic>.py.json` (it holds each cell's executed output and a vega-lite spec for charts), and/or have the notebook write its tables and figures (PNG) under `data/processed/<topic>/` and `Read` those. The rule that you must look at actual outputs, not just a green check, is unchanged; only the surface you look at differs. Do not treat "the cell ran without error" as having looked.
+
 5. **Final check - the headless gate.**
    Once the notebook reads right in the kernel, run it from a clean slate to catch what only the live session was propping up (stale kernel state, import order, a cell that never re-ran).
    Use the `scripts/validate-notebook.sh` bundled with this skill, passing the notebook path:
 
    ```bash
-   bash <vignette-catalog-compose-notebook-skill-dir>/scripts/validate-notebook.sh notebooks/<topic>.py
+   # installed into the catalog by `npx skills add` (Claude Code: .claude/skills/...)
+   bash .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh notebooks/<topic>.py
    ```
 
    It runs `marimo check --fix`, runs `ruff` on that notebook, and - last, after the final source edit - executes the notebook through marimo export.

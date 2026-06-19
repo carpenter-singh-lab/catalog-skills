@@ -21,11 +21,14 @@ No `[project]` table - a catalog is not an installable package.
 
 ```text
 # Data contents (structure tracked via .gitkeep) - for fetched/large data only.
-# OMIT these four lines when surface = "files": small data committed to the repo,
+# OMIT this data/** block when surface = "files": small data committed to the repo,
 # where you WANT data/ tracked. See the note under this block.
 data/**
 !data/**/
 !data/**/.gitkeep
+# Index envelopes are kilobyte metadata the index notebook discovers - keep them
+# tracked even though the fetched/large data beside them is ignored.
+!data/processed/**/summary.json
 
 # marimo caches and exported session snapshots
 notebooks/__marimo__/**
@@ -52,6 +55,7 @@ __pycache__/
 
 `skills-lock.json` itself is tracked - it is the record `npx skills update` restores from. Do not ignore it.
 The `data/**` block is right for `rest` / `duckdb` / `pooch` surfaces, where `data/` holds large fetched artifacts.
+The `!data/processed/**/summary.json` allow line is the deliberate exception: those envelopes are kilobyte metadata the index notebook globs and renders (see `indexing.md`), so they stay tracked even while the bulk data beside them is ignored.
 For `surface = "files"` - small data committed to the repo (the whole point of a committed-data instance) - drop those four `data/**` lines so the data is tracked; git is then the integrity mechanism (see the `vignette-catalog-compose-notebook` data contract).
 Do not track `notebooks/__marimo__/session/*.json` by default. Those files are useful local export artifacts, but they can include random marimo UI widget ids and produce noisy diffs. If a catalog deliberately wants molab/static previews from committed snapshots, add an explicit `!notebooks/__marimo__/session/*.json` exception and warn the user about the churn tradeoff.
 
@@ -145,3 +149,65 @@ does     = "Orientation: what this dataset is and how to reach it"
 ```
 
 See the `vignette-catalog-compose-notebook` skill's `references/manifest.md` for the full manifest schema.
+
+## notebooks/nb01_orientation.py
+
+The orientation notebook is a real marimo `.py`, so it needs the marimo app frame, not just a setup block and a function.
+Start from this skeleton and fill the surface-specific bits (`<DEP>` deps, the `@app.function` body that hits the surface).
+Omit `__generated_with`; `marimo check --fix` (the validate step) stamps it - which is why you commit after validating, not before.
+
+```python
+# /// script
+# requires-python = ">=3.12,<3.14"
+# dependencies = [
+#     "marimo",
+#     # <DEP: surface deps, e.g. "requests==2.32.5" (rest), "duckdb" + "pyarrow" (duckdb), "pooch" + "polars" (pooch)>
+# ]
+# ///
+
+import marimo
+
+app = marimo.App(width="medium")
+
+with app.setup:
+    import marimo as mo
+    # <surface imports and constants, e.g. BASE_URL / a cache path>
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    # nb01 - orientation
+
+    <one paragraph: what this dataset is and how the catalog reaches it>
+    """)
+    return
+
+
+@app.function
+def reach_surface():
+    """One call that hits the data surface and returns something real."""
+    ...  # <surface-specific: a GET, a DuckDB query, a pooch fetch>
+
+
+@app.cell
+def _():
+    result = reach_surface()
+    mo.md("## Live check")
+    result
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## To extend
+
+    <two or three concrete next questions this catalog should answer>
+    """)
+    return
+
+
+if __name__ == "__main__":
+    app.run()
+```

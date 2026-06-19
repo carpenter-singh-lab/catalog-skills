@@ -26,6 +26,7 @@ Pin the SHA-256 of the *canonical extracted content* instead - the parsed table,
 
 **Cache large remote artifacts** under `~/.cache/<catalog>` with an env-var override (for example, `CATALOG_CACHE`); check the cache first, fall back to remote.
 Commit small data (kilobytes); gitignore large data and the cache.
+The `summary.json` index envelopes under `data/processed/` are small data of this kind: even on `rest`/`duckdb`/`pooch` surfaces where `data/` is gitignored, they stay tracked (the scaffold `.gitignore` allow-lists `data/processed/**/summary.json`) so the index notebook can discover them. A render-only notebook with no file outputs simply writes no envelope.
 
 **Dataset-driven differences are intentional and explicit** - declare them in `catalog.toml`.
 Use the `surface` field to choose the data access pattern:
@@ -33,7 +34,7 @@ Use the `surface` field to choose the data access pattern:
 | Surface | Use it for | Auth | Cache / data policy |
 |---|---|---|---|
 | `rest` | Live HTTP APIs via `httpx` or `requests` | Optional env var from `[auth]` | Prefer small, fresh responses; cache bulky or slow responses explicitly |
-| `duckdb` | Local DuckDB databases or parquet-backed tables | Usually none, unless remote fetches need credentials | Cache large artifacts under `~/.cache/<catalog>` or the manifest's cache env var |
+| `duckdb` | Local DuckDB databases or parquet-backed tables | Usually none, unless remote fetches need credentials | Cache large artifacts under `~/.cache/<catalog>` or the manifest's cache env var. `LOAD httpfs` for remote parquet; DuckDB->polars (`.pl()`) needs `pyarrow` in the notebook deps |
 | `pooch` | Published files fetched by URL | Usually none | Store raw downloads under gitignored `data/`; require SHA-256 pins |
 | `files` | Small delivered data committed directly to the repo | None | Commit the files and do not ignore `data/`; git is the integrity mechanism |
 

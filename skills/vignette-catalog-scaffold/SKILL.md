@@ -56,14 +56,20 @@ Run in order; stop and report on any failure.
    The skills CLI auto-detects common agents; pass `--agent <agent>` only when the project needs an explicit target.
    This pulls the *published* skills and records that GitHub source in `skills-lock.json`. When you are iterating on the skills themselves and need the scaffold to use unpublished edits, install from a local checkout instead - `npx skills add <path-to-vignette-catalog-skills-checkout> -y` - then publish before the catalog is shared.
 
-5. Write an orientation notebook `notebooks/nb01_orientation.py`: a PEP 723 header, a `with app.setup:` block, one `@app.function` that hits the data surface, and a `## To extend` cell. Keep it minimal but runnable.
-   Omit `__generated_with`; the step 8 validate (`marimo check --fix`) stamps the marimo version and normalizes the file. Commit (step 9) after validating so that normalized form is what lands.
+5. Write an orientation notebook `notebooks/nb01_orientation.py`: a PEP 723 header, a `with app.setup:` block, one or more `@app.function` helpers (at least one hits the data surface), and a `## To extend` cell. Keep it minimal but runnable. Start from the `notebooks/nb01_orientation.py` skeleton in [references/templates.md](references/templates.md) - it has the full marimo app frame (`import marimo`, `app = marimo.App(...)`, `if __name__ == "__main__": app.run()`), not just the setup block.
+   Omit `__generated_with`; the step 8 validate (`marimo check --fix`) adds it back and normalizes the file - that is why you commit (step 9) after validating, so the stamped, normalized form is what lands.
 
 6. Write a short `README.md`: what the catalog is, the one-row notebook list, setup instructions, links to sibling catalogs and to the vignette-catalog-skills repo. The setup section must include the post-clone skill restore (`npx skills update`), since the skill stores are gitignored and a cloner has only `skills-lock.json`.
 
 7. Fill `catalog.toml` with the orientation notebook's helper(s) and the data surface / auth.
 
-8. Validate with the `validate-notebook.sh` bundled in the installed `vignette-catalog-compose-notebook` skill, passing `notebooks/nb01_orientation.py`, or run the launch/ruff/marimo-check/export sequence by hand.
+8. Validate with the `validate-notebook.sh` bundled in the installed `vignette-catalog-compose-notebook` skill, passing `notebooks/nb01_orientation.py`. After step 4's `npx skills add` the literal path is:
+
+   ```bash
+   bash .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh notebooks/nb01_orientation.py
+   ```
+
+   (Installs that target Claude Code instead use `.claude/skills/...`.) If this skill was installed alone, run the launch/ruff/marimo-check/export sequence by hand.
 
 9. `git add . && git commit -m "feat: initial catalog scaffold"`.
 
