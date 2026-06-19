@@ -28,6 +28,12 @@ Pin exact versions for scientific deps you have validated (e.g. `polars==1.40.1`
 Shared paths and constants live in the setup block of the lowest-numbered (orientation) notebook and are imported by later notebooks - do not add a separate `config` notebook or module.
 The orientation notebook *is* the config; a dedicated config notebook is a holdover from the old cookiecutter layout.
 
+**REST surfaces are flaky - harden the shared HTTP helper.**
+A bare `requests.get(url).raise_for_status()` is too optimistic against a real public API.
+Route every call through one importable `@app.function` (an `api_get` / `bb_get`) so the whole catalog inherits two behaviors it will otherwise rediscover the hard way: (a) send an identifying `User-Agent` - some endpoints reject the default `python-requests` agent with a `403` and an HTML body, not JSON; (b) set a bounded timeout and retry transient `5xx` / connection errors with backoff, raising immediately on `4xx` (a real client error).
+This converged independently across catalogs (ChEMBL's sporadic 500s, DepMap's 504s), which is why it belongs in the orientation helper from the start rather than per-notebook.
+The scaffold's `templates.md` carries the concrete shape.
+
 **Cross-notebook imports:** add `notebooks/` to the path in the setup block, then import as plain Python.
 
 ```python

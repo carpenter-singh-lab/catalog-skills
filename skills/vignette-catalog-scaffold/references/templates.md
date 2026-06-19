@@ -211,3 +211,40 @@ def _():
 if __name__ == "__main__":
     app.run()
 ```
+
+### REST surfaces: harden the HTTP helper
+
+For a `rest` surface the orientation helper is the catalog's first HTTP call, and a bare `requests.get(url).raise_for_status()` is too optimistic against a real public API (see `conventions.md`, "REST surfaces are flaky", for why).
+Send an identifying `User-Agent` and retry transient `5xx` / connection errors under a bounded timeout, factored as one importable `@app.function` so every later notebook inherits it:
+
+```python
+with app.setup:
+    import time
+
+    import requests
+
+    BASE_URL = "https://<api-host>/<base-path>"
+    HEADERS = {"Accept": "application/json", "User-Agent": "<catalog>/0.1 (+<repo-url>)"}
+
+
+@app.function
+def api_get(endpoint: str, params: dict | None = None, *, retries: int = 5, backoff: float = 2.0) -> object:
+    """GET <dataset> with a bounded timeout and retry on transient 5xx / connection errors."""
+    last = None
+    for attempt in range(retries):
+        try:
+            response = requests.get(
+                f"{BASE_URL}/{endpoint.lstrip('/')}", params=params, headers=HEADERS, timeout=30
+            )
+            if response.status_code < 500:
+                response.raise_for_status()  # 4xx is a real client error - surface it now
+                return response.json()
+            last = f"HTTP {response.status_code}"
+        except requests.RequestException as exc:
+            last = str(exc)
+        time.sleep(backoff * (attempt + 1))
+    raise RuntimeError(f"{endpoint} failed after {retries} retries: {last}")
+```
+
+`reach_surface()` then calls `api_get(...)` instead of a bare GET.
+Live HTTP only - `duckdb` / `pooch` / `files` surfaces do not need it.
