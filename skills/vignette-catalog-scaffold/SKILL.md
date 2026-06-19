@@ -63,13 +63,15 @@ Run in order; stop and report on any failure.
 
 7. Fill `catalog.toml` with the orientation notebook's helper(s) and the data surface / auth.
 
-8. Validate with the `validate-notebook.sh` bundled in the installed `vignette-catalog-compose-notebook` skill, passing `notebooks/nb01_orientation.py`. After step 4's `npx skills add` the literal path is:
+8. Validate with the `validate-notebook.sh` bundled in the installed `vignette-catalog-compose-notebook` skill, passing `notebooks/nb01_orientation.py`. After step 4's `npx skills add` the script lands under `.agents/skills/` (universal install) or `.claude/skills/` (when the install targets Claude Code) - resolve whichever exists rather than assuming one:
 
    ```bash
-   bash .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh notebooks/nb01_orientation.py
+   VALIDATE=$(ls .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh \
+                .claude/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh 2>/dev/null | head -1)
+   bash "$VALIDATE" notebooks/nb01_orientation.py
    ```
 
-   (Installs that target Claude Code instead use `.claude/skills/...`.) If this skill was installed alone, run the launch/ruff/marimo-check/export sequence by hand.
+   If this skill was installed alone, run the launch/ruff/marimo-check/export sequence by hand.
 
 9. `git add . && git commit -m "feat: initial catalog scaffold"`.
 

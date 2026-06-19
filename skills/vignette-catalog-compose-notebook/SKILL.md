@@ -53,6 +53,7 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
 4. **Compose in the kernel - run, look, iterate.**
    This is the feedback loop.
    Work one cell at a time: run the fetch first and look at the actual frame before writing any narrative around it; do not fabricate numbers or describe outputs you have not run.
+   On a REST or otherwise open-ended surface, bound that first fetch - one page, a small `limit`, a single id - before you widen. An unbounded exploratory pull can crawl an entire table (a popular target's bioactivity set is tens of thousands of rows) and stall the loop before you have seen the shape of anything. Look at the bounded slice, confirm the fields are what you expect, then raise the limit deliberately if the question actually needs more.
    Then add each downstream cell, run it in the kernel via the `marimo-pair` execute scripts (targeting your port), and read the output before moving on.
    For charts, looking means inspecting the rendered image, not just confirming the cell ran without error. In a live session, `ctx.screenshot` rasterizes the rendered DOM to a PNG - one call for matplotlib, altair/vega, plotly, or a widget alike. See [references/viewing-outputs.md](references/viewing-outputs.md).
    Keep going until every cell runs clean and says something true.
@@ -64,8 +65,11 @@ The headless `validate-notebook.sh` is the final gate, not the feedback loop.
    Use the `scripts/validate-notebook.sh` bundled with this skill, passing the notebook path:
 
    ```bash
-   # installed into the catalog by `npx skills add` (Claude Code: .claude/skills/...)
-   bash .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh notebooks/<topic>.py
+   # `npx skills add` installs to .agents/skills/ (universal) or .claude/skills/ (when it targets
+   # Claude Code) - resolve whichever exists rather than hardcoding one and hitting a missing path:
+   VALIDATE=$(ls .agents/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh \
+                .claude/skills/vignette-catalog-compose-notebook/scripts/validate-notebook.sh 2>/dev/null | head -1)
+   bash "$VALIDATE" notebooks/<topic>.py
    ```
 
    It runs `marimo check --fix`, runs `ruff` on that notebook, and - last, after the final source edit - executes the notebook through marimo export.
