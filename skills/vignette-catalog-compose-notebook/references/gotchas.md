@@ -37,6 +37,6 @@ They can also include interactive UI widget metadata, including random ids, that
 
 ## data surfaces
 
-- Query an API's OpenAPI spec before guessing parameter names; semantic endpoint names do not imply response shape or granularity.
+- Query an API's OpenAPI spec before guessing parameter names; semantic endpoint names do not imply response shape or granularity. If the spec 404s (not every API publishes one at `/openapi.json`), fall back to fetching one sample response and reading the parameters and shape off it - do not guess.
 - Pin SHA-256 on pooch fetches - hosted files and CDNs can redirect or change silently, and the hash is what guarantees integrity across a swap.
 - Check sign conventions on similarity/distance matrices against the actual values, not the filename or docstring.
