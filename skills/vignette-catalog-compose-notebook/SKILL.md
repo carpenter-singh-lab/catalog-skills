@@ -40,7 +40,8 @@ Some asks are not "make this chart" but "what does this data say about X?", "fin
 Then you are a **research partner**: the deliverable is an evidence-built *argument*, honest about what it shows - and you can reach past the catalog (spawn subagents, read literature, search the web, hit other live APIs).
 The notebook is still where the argument lands and stays re-runnable.
 
-Before a thread like that, read **[references/research-method.md](references/research-method.md)** - the moves that make it productive instead of a fluent restatement of the consensus (hypothesis-then-test-its-other-predictions, hunt past the consensus answer, calibrate confidence, fan out subagents as on-demand instruments, red-team your own result, design the falsifier, confirm before outward actions).
+Before a thread like that, read **[references/research-method.md](references/research-method.md)** - the moves that make it productive instead of a fluent restatement of the consensus (hypothesis-then-test-its-other-predictions, hunt past the consensus answer, do not confirm your own model, calibrate confidence, fan out subagents as on-demand instruments, red-team your own result, design the falsifier, confirm before outward actions).
+For how to *present* the result so a reader can trust it - the hypothesis-experiment-observation loop, narrating the world rather than your own iteration, separating robust from fragile, defining instruments - read **[references/communicating-the-analysis.md](references/communicating-the-analysis.md)**.
 The composition mechanics below still apply throughout.
 
 ## Procedure
@@ -117,6 +118,7 @@ The snapshot tradeoffs and other traps are in [references/gotchas.md](references
 ## References
 
 - [research-method.md](references/research-method.md) - **research-partner principles**: how to use the catalog (and subagents, literature, the web) for open-ended, hypothesis-driven research that earns trust
+- [communicating-the-analysis.md](references/communicating-the-analysis.md) - **how to present the result**: the hypothesis-experiment-observation loop, narrating the world not your own iteration, robust vs fragile, defining instruments
 - [conventions.md](references/conventions.md) - notebook structure, naming, imports, PEP 723, ruff
 - [data.md](references/data.md) - the four-tier data contract, SHA-256 pinning, caching
 - [indexing.md](references/indexing.md) - the `summary.json` envelope and the index notebook

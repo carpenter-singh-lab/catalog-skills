@@ -78,6 +78,13 @@ Confirm before any outward or hard-to-reverse action, including live benchmark s
 After any clean-sounding result, ask: would I have predicted this, at this confidence, before I saw the answer? If the explanation only sharpened once the result was in view, it is post-hoc - label it that way.
 When a held-out answer key exists (a benchmark oracle, a future value), the operator should keep it out of the working context, including your own memory and notes; prose discipline is only the weak backup to actually withholding it.
 
+**13. Do not confirm your own model.**
+When a prediction comes from a model you built on your own assumptions, running that model is not a test of those assumptions - it can only reproduce them, however rigorous the output looks.
+The real experiment is data *independent* of the model: find a measurement that could contradict the load-bearing assumption and go get it.
+A combination model with a hand-set synergy rule will always "find" the synergy it was given; only an external screen can refute it.
+The tell is an experiment whose result was determined the moment you wrote the model - if nothing in the world could have come back and surprised you, you have a restatement, not evidence.
+This is the most seductive failure in this method, because the self-confirming version looks identical to real work: a hypothesis, a computation, a table, a conclusion. The difference is whether the middle step could have failed.
+
 ## Safety note: shown-once secrets
 
 When a tool returns a secret shown only once, such as a registration token or one-time key, capture it in-process and surface it to the user before doing anything else.
