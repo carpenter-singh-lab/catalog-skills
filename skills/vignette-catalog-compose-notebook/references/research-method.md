@@ -74,6 +74,10 @@ Name the weakest link before the user acts on the finding.
 Surface decisions that belong to the user: scope, naming, what to publish, what to submit, and what to send externally.
 Confirm before any outward or hard-to-reverse action, including live benchmark submission, answer-revealing publication, identity registration, or external messages.
 
+**12. Run the post-hoc self-check.**
+After any clean-sounding result, ask: would I have predicted this, at this confidence, before I saw the answer? If the explanation only sharpened once the result was in view, it is post-hoc - label it that way.
+When a held-out answer key exists (a benchmark oracle, a future value), the operator should keep it out of the working context, including your own memory and notes; prose discipline is only the weak backup to actually withholding it.
+
 ## Safety note: shown-once secrets
 
 When a tool returns a secret shown only once, such as a registration token or one-time key, capture it in-process and surface it to the user before doing anything else.
