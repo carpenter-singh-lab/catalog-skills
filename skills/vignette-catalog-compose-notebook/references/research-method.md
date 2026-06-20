@@ -10,7 +10,7 @@ It should contain the claims, evidence, code, and limitations - not a transcript
 
 ## Principles
 
-Not a checklist - the moves that separate a real contribution from a fluent restatement of the consensus.
+These are habits, not checklist items: the difference between summarizing the consensus and contributing something useful.
 
 **1. Hypothesis first, then test its *other* predictions.** A claim earns trust from predictions you did *not* build it on.
 State the mechanism, derive 3-5 independent consequences, check each, and report the misses as loudly as the hits - a failed sub-prediction shows exactly where the model is wrong and is often the most useful output.
