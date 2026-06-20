@@ -48,6 +48,7 @@ The composition mechanics below still apply throughout.
 
 1. **Ensure a live kernel.** You compose against a running marimo kernel driven by the `marimo-pair` skill.
    If none is running - no `marimo-pair` session, no port you can post cells to - run `vignette-catalog-setup` first: it installs `marimo-pair`, launches the catalog's first notebook under `--sandbox`, runs its cells, and hands back a live kernel on a known port.
+   Headless with no browser is fine - setup creates the session for you with its bundled `scripts/register-session.py`; you do not need a browser or `agent-browser`.
    Keep that port - but know it is the *first notebook's* sandbox, bound to that notebook.
    A parameter swap (step 3) runs there directly; composing a new notebook gets its own kernel instead (step 3 explains why and how).
 
@@ -63,7 +64,19 @@ The composition mechanics below still apply throughout.
 
 **A composed notebook usually needs its own kernel - do not assume the handed-off one will do.** The kernel `vignette-catalog-setup` gives you runs the *first* notebook inside a `--sandbox` provisioned from *that* notebook's PEP 723 deps.
 The moment your composed `.py` declares a dependency the first notebook lacks - a plotting or dataframe library, say - importing it in the handed-off kernel fails with `ModuleNotFoundError`, because the sandbox was never told about it and `pip install` into a uv sandbox is not the path.
-So default to giving the composed notebook its own kernel: launch a fresh one *on the composed notebook* with the same recipe `vignette-catalog-setup` step 5 uses (a new port, `env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --port <new> notebooks/<topic>.py`, then register a session and run the cells), and target that new port for every "run a cell" in step 4.
+So default to giving the composed notebook its own kernel.
+Launch a fresh one *on the composed notebook* and register a session, then target that new port for every "run a cell" in step 4.
+This is the same recipe `vignette-catalog-setup` step 5 uses, inlined here so you do not have to bounce back to that skill - launch, register, done:
+
+```bash
+PORT=$(python3 -c "import socket;s=socket.socket();s.bind(('127.0.0.1',0));print(s.getsockname()[1]);s.close()")
+env -u PYTHONPATH uvx marimo edit --sandbox --no-token --headless --host 127.0.0.1 --port "$PORT" notebooks/<topic>.py >/tmp/marimo_$PORT.log 2>&1 &
+until curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/" | grep -q 200; do sleep 2; done
+# headless, no browser: register the session that execute-code/marimo-pair attaches to
+<setup-skill-dir>/scripts/register-session.py --port "$PORT"
+```
+
+The `register-session.py` call is the load-bearing step the live kernel needs on a headless host - run it as an executable (its shebang provisions `websockets` via `uv run`); do not skip it and fall back to the export-only path.
 Do this even when your deps happen to match the first notebook's - the handed-off kernel is bound to *that* notebook, not yours, so reusing it is awkward and easy to get wrong.
 The dependency mismatch above is just the sharpest reason; "its own kernel" is the safe default regardless.
 The one case that stays on the handed-off kernel is a parameter swap: changing inputs in the existing notebook in place, not composing a new file.
