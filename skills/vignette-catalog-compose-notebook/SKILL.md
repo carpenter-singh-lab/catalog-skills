@@ -125,7 +125,7 @@ Commit them only when the repo explicitly tracks snapshots for molab/static rend
 The snapshot tradeoffs and other traps are in [references/gotchas.md](references/gotchas.md).
 
 For a **research** notebook (the "When it's research" path), run one more gate after the lint one: `scripts/red-team-notebook.sh <notebook.py>`.
-It spawns a fresh `claude -p` reviewer that reads the notebook against `references/research-method.md` and flags the failure modes you cannot see from inside the work - a self-confirming model (#13), confirming the consensus and calling it a finding (#14), an echo treated as convergence, unstated instrument limits, uncalibrated confidence.
+It spawns a fresh reviewer (`codex exec` when available, otherwise `claude -p`) that reads the notebook against `references/research-method.md` and flags the failure modes you cannot see from inside the work - a self-confirming model (#13), confirming the consensus and calling it a finding (#14), an echo treated as convergence, unstated instrument limits, uncalibrated confidence.
 This is the reasoning analog of the lint gate: lint catches a broken cell, this catches a fluent-but-circular argument, and it runs outside your own attention so the check cannot be rationalized away.
 A catalog can make it automatic with the bundled `scripts/red-team-on-stop.sh` as a `Stop` hook (see that script's header); then a flagged notebook blocks the turn until addressed.
 

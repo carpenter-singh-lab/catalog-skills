@@ -26,15 +26,26 @@ The skills CLI auto-detects common agents; pass `--agent <agent>` only when you 
 
 This path installs the skills only.
 The repo also ships a research-method **red-team Stop hook** (it reviews a composed research notebook against [the research-method principles](skills/vignette-catalog-compose-notebook/references/research-method.md) and blocks the turn on a flagged argument).
-Skills cannot carry hooks, so to get it auto-wired, install as a Claude Code plugin instead:
+Skills cannot carry hooks, so to get it auto-wired, install as a plugin instead.
+
+Claude Code:
 
 ```bash
 /plugin marketplace add carpenter-singh-lab/vignette-catalog-skills
 /plugin install vignette-catalog-skills
 ```
 
+Codex:
+
+```bash
+codex plugin marketplace add carpenter-singh-lab/vignette-catalog-skills
+codex plugin add vignette-catalog-skills@vignette-catalog-skills
+```
+
+Then open `/hooks`, trust the Stop hook, and start a new thread.
+
 Pick one path per catalog, not both.
-Use `npx skills add` for the skills alone (wire the hook by hand in `.claude/settings.json` if you want it); use `/plugin install` when you want the hook with no setup.
+Use `npx skills add` for the skills alone (wire the hook by hand if you want it); use the plugin path when you want the hook with no setup.
 
 ## The skills
 

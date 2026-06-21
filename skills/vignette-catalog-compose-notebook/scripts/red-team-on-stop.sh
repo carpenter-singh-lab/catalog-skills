@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Stop hook (async): on turn-end, red-team any changed notebook WITHOUT waiting for
-# the ~2-min review. The expensive `claude -p` runs detached; its verdict lands in a
+# the ~2-min review. The expensive reviewer runs detached; its verdict lands in a
 # cache file and is enforced on a LATER turn-end. This keeps the harness block
 # (enforcement at a checkpoint) but moves the slow review off the critical path - no
 # dead wait while you compose.
@@ -13,7 +13,7 @@
 # Wire from a catalog's .claude/settings.json, or ship it as a plugin Stop hook:
 #   "command": "bash .../scripts/red-team-on-stop.sh 2>/dev/null || true"
 set -uo pipefail
-[ -n "${RED_TEAM_RUNNING:-}" ] && exit 0       # don't fire inside our own `claude -p`
+[ -n "${RED_TEAM_RUNNING:-}" ] && exit 0       # don't fire inside our own reviewer
 cat >/dev/null 2>&1 || true                     # drain the Stop-hook stdin payload
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -35,7 +35,7 @@ for nb in $({ git ls-files --others --exclude-standard 'notebooks/*.py' 2>/dev/n
     continue
   else                                         # first sight -> launch detached, let this stop pass
     touch "$key.running"
-    setsid bash -c "RED_TEAM_RUNNING=1 bash '$RT' '$nb' >'$key.verdict.tmp' 2>/dev/null; mv '$key.verdict.tmp' '$key.verdict'; rm -f '$key.running'" </dev/null >/dev/null 2>&1 &
+    RED_TEAM_RUNNING=1 RT="$RT" NB="$nb" KEY="$key" python3 -c 'import os, subprocess; cmd = "bash \"$RT\" \"$NB\" >\"$KEY.verdict.tmp\" 2>/dev/null; mv \"$KEY.verdict.tmp\" \"$KEY.verdict\"; mv -f \"$KEY.running\" \"$KEY.done\""; subprocess.Popen(["bash", "-c", cmd], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True, env=os.environ.copy())' >/dev/null 2>&1 || true
   fi
 done
 

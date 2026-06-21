@@ -1,17 +1,27 @@
 #!/usr/bin/env bash
 # Adversarial reasoning review of a composed notebook against research-method.md.
-# Fires a fresh `claude -p` sub-agent so the check runs OUTSIDE the composing
+# Fires a fresh Codex/Claude reviewer so the check runs OUTSIDE the composing
 # agent's own attention - the reasoning analog of validate-notebook.sh (which is
 # only lint). Prints the reviewer's verdict to stdout.
 set -euo pipefail
 NB="${1:?usage: red-team-notebook.sh <notebook.py>}"
 METHOD="$(dirname "$0")/../references/research-method.md"
-command -v claude >/dev/null || { echo "red-team: claude CLI not found" >&2; exit 2; }
 [ -f "$METHOD" ] || { echo "red-team: research-method.md not found at $METHOD" >&2; exit 2; }
 
-# Guard: the inner `claude -p` runs its own Stop hooks; this env var tells
+# Guard: the inner reviewer may run its own Stop hooks; this env var tells
 # red-team-on-stop.sh to no-op so we do not recurse.
 export RED_TEAM_RUNNING=1
+
+reviewer() {
+  if command -v codex >/dev/null; then
+    codex exec --ephemeral --sandbox read-only --ask-for-approval never --dangerously-bypass-hook-trust -
+  elif command -v claude >/dev/null; then
+    claude -p --model claude-opus-4-8
+  else
+    echo "red-team: neither codex nor claude CLI found" >&2
+    return 2
+  fi
+}
 
 {
   cat <<'ASK'
@@ -27,4 +37,4 @@ ASK
   cat "$METHOD"
   echo "=== NOTEBOOK ==="
   cat "$NB"
-} | claude -p --model claude-opus-4-8
+} | reviewer
