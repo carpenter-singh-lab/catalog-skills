@@ -10,8 +10,7 @@ This is a general pattern for doing data analysis.
 It works at one notebook and scales to many; scaling up is optional.
 Four catalogs run today on this pattern: [jx](https://github.com/broadinstitute/jx) (JUMP Cell Painting), [fgx](https://github.com/broadinstitute/fgx) (FinnGen genetics), [prx](https://github.com/broadinstitute/prx) (PROSPECT chemical-genetics), [dmx](https://github.com/broadinstitute/dmx) (DepMap).
 
-> This repo is the successor to the lab's old `workflows.md` (Cookiecutter Data Science + Snakemake/S3 pipeline SOP).
-> Catalog-composition is now the default way we do data analysis; the heavy pipeline machinery is no longer where you start.
+> This repo is the successor to the lab's old `workflows.md` (Cookiecutter Data Science + Snakemake/S3 pipeline SOP). > Catalog-composition is now the default way we do data analysis; the heavy pipeline machinery is no longer where you start.
 
 ## Install
 
@@ -21,8 +20,21 @@ Works with any agent that supports the [Agent Skills](https://agentskills.io) op
 npx skills add carpenter-singh-lab/vignette-catalog-skills -y
 ```
 
-This installs all three skills (they are small and work together). The three are also self-contained, so installing the collection and ignoring the ones you do not need is fine.
+This installs all three skills (they are small and work together).
+The three are also self-contained, so installing the collection and ignoring the ones you do not need is fine.
 The skills CLI auto-detects common agents; pass `--agent <agent>` only when you need to target a specific one.
+
+This path installs the skills only.
+The repo also ships a research-method **red-team Stop hook** (it reviews a composed research notebook against [the research-method principles](skills/vignette-catalog-compose-notebook/references/research-method.md) and blocks the turn on a flagged argument).
+Skills cannot carry hooks, so to get it auto-wired, install as a Claude Code plugin instead:
+
+```bash
+/plugin marketplace add carpenter-singh-lab/vignette-catalog-skills
+/plugin install vignette-catalog-skills
+```
+
+Pick one path per catalog, not both.
+Use `npx skills add` for the skills alone (wire the hook by hand in `.claude/settings.json` if you want it); use `/plugin install` when you want the hook with no setup.
 
 ## The skills
 
@@ -39,8 +51,11 @@ The operational depth - conventions, gotchas, the data contract, the index noteb
 ## Why this shape
 
 - **Catalog over library.** Reusable logic lives as `@app.function` cells in numbered notebooks, imported across notebooks - not extracted into a package until repeated imports actually make it painful.
-- **Vignettes vs composed notebooks.** Vignettes are the curated catalog (each teaches one move, high bar). Composed notebooks are answers to questions (they just have to work). Keeping them distinct is what keeps a catalog small and high-signal.
-- **Agent-native.** The contract is skills, not a document, because the thing that acts on it is an agent. A catalog installs these skills rather than copy-pasting them, so the contract stays in one place and instances re-converge by version bump.
+- **Vignettes vs composed notebooks.** Vignettes are the curated catalog (each teaches one move, high bar).
+  Composed notebooks are answers to questions (they just have to work).
+  Keeping them distinct is what keeps a catalog small and high-signal.
+- **Agent-native.** The contract is skills, not a document, because the thing that acts on it is an agent.
+  A catalog installs these skills rather than copy-pasting them, so the contract stays in one place and instances re-converge by version bump.
 
 ## When to use a catalog vs a production pipeline
 
